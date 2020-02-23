@@ -1,4 +1,5 @@
 #include <string>
+#include <vector>
 
 // Remove /r and /n from a string
 void clrNewlines(std::string &str);
@@ -17,3 +18,6 @@ int hideInput(int fd, bool hide);
 
 // Generates a random string of the assigned length
 void genRandString(std::string &buf, size_t n);
+
+std::vector<uint8_t> strtovect(std::string input);
+std::string vecttostr(std::vector<uint8_t> input);

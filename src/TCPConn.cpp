@@ -181,6 +181,14 @@ void TCPConn::handleConnection() {
          case s_connected:
             waitForSID();
             break;
+
+         case s_clientEncrypt:
+            clientEncrypt();
+            break;
+
+         case s_serverEncrypt:
+            serverEncrypt();
+            break;
    
          // Client: connecting user - replicate data
          case s_datatx:
@@ -224,7 +232,8 @@ void TCPConn::sendSID() {
    wrapCmd(buf, c_sid, c_endsid);
    sendData(buf);
 
-   _status = s_datatx; 
+   //_status = s_datatx; 
+   _status = s_clientEncrypt;
 }
 
 /**********************************************************************************************
@@ -254,11 +263,14 @@ void TCPConn::waitForSID() {
       setNodeID(node.c_str());
 
       // Send our Node ID
-      buf.assign(_svr_id.begin(), _svr_id.end());
+      //buf.assign(_svr_id.begin(), _svr_id.end());
+      genRandString(randStr, 32);
+      buf = strtovect(randStr);
       wrapCmd(buf, c_sid, c_endsid);
       sendData(buf);
 
-      _status = s_datarx;
+      //_status = s_datarx;
+      _status = s_serverEncrypt;
    }
 }
 
@@ -274,6 +286,7 @@ void TCPConn::transmitData() {
    // If data on the socket, should be our Auth string from our host server
    if (_connfd.hasData()) {
       std::vector<uint8_t> buf;
+      std::string data2;
 
       if (!getData(buf))
          return;
@@ -284,6 +297,12 @@ void TCPConn::transmitData() {
          _server_log.writeLog(msg.str().c_str());
          disconnect();
          return;
+      }
+
+      decryptData(buf);
+      data2 = vecttostr(buf);
+      if (data2 != randStr) {
+         std::cout << "Issue with random strings. data2 = " << data2 << " and randStr = " << randStr << std::endl;
       }
 
       std::string node(buf.begin(), buf.end());
@@ -622,3 +641,55 @@ const char *TCPConn::getIPAddrStr(std::string &buf) {
    return buf.c_str();
 }
 
+void TCPConn::clientEncrypt() {
+   std::vector<uint8_t> buf, randNum;
+   std::string randStr;
+   if (_connfd.hasData()) {
+      getData(buf);
+      getCmdData(buf, c_sid, c_endsid);
+
+      encryptData(buf);
+      genRandString(randStr, 32);
+      randNum = strtovect(randStr); 
+      randNum.insert(randNum.end(), buf.begin(), buf.end());
+      wrapCmd(randNum, c_sid, c_endsid);
+      sendData(randNum);
+
+      _status = s_datatx;
+   }
+}
+
+void TCPConn::serverEncrypt() {
+   std::vector<uint8_t> buf, randIn, data;
+   std::string data2;
+   std::stringstream msg;
+   int i = 0;
+   //auto j;
+   if (_connfd.hasData()) {
+      getData(buf);
+      if (!getCmdData(buf, c_sid, c_endsid)) {
+         msg << "Encrypted string from client invalid";
+         std::cout << "Encrypted string from client invalid" << std::endl;
+         _server_log.writeLog(msg.str().c_str());
+      }
+
+      for (i = 0; i<32; i++) { //should be 32, but crashes above 19
+         //std::cout << "server encrypt #" << i << std::endl;
+         randIn.push_back(buf.at(i));
+      }
+
+      for (auto j = buf.begin()+32; j != buf.end(); j++) {
+         data.push_back(*j);
+      }
+
+      decryptData(data);
+
+      data2 = vecttostr(data);
+
+      encryptData(randIn);
+      wrapCmd(randIn, c_sid, c_endsid);
+      sendData(randIn);
+
+      _status = s_datarx;
+   }
+}
