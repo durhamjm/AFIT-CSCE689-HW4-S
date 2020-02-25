@@ -202,7 +202,7 @@ void DronePlot::clrFlags(unsigned short flags) {
 }
 
 bool DronePlot::isFlagSet(unsigned short flags) {
-   return (bool) _flags & flags;
+   return (bool) (_flags & flags);
 }
 
 /*****************************************************************************************
@@ -236,10 +236,29 @@ void DronePlotDB::addPlot(int drone_id, int node_id, time_t timestamp, float lat
    // First lock the mutex (blocking)
    pthread_mutex_lock(&_mutex);
 
-   _dbdata.emplace_back(drone_id, node_id, timestamp, latitude, longitude);
-
+   // Check to see if the data point is already in the database
+   std::list<DronePlot>::iterator diter2;
+   int check = 1;
+   for (diter2 = _dbdata.begin(); diter2 != _dbdata.end(); diter2++) {
+      // First check lat & long for a match
+      if (latitude == diter2->latitude && longitude == diter2->longitude) {
+         //std::cout << "DB Lat/Long Match" << std::endl;
+         // Then check to see if the new data is at least 20 seconds later than the old point
+         if (timestamp < diter2->timestamp + 20) {
+            check = 0;
+            //std::cout << "DPDB Check = " << check << std::endl;
+            //break;
+         }
+      }
+   
+   }
+   if (check == 1) {
+      // std::cout << "DPDB write Check = " << check << std::endl;
+      _dbdata.emplace_back(drone_id, node_id, timestamp, latitude, longitude);
+   }
    // Unlock the mutex before we exit
    pthread_mutex_unlock(&_mutex);
+      
 }
 
 /*****************************************************************************************
@@ -454,11 +473,12 @@ std::list<DronePlot>::iterator DronePlotDB::erase(std::list<DronePlot>::iterator
    // First lock the mutex (blocking)
    pthread_mutex_lock(&_mutex);
 
-   return _dbdata.erase(dptr);
+   auto retptr = _dbdata.erase(dptr);
 
    // Unlock the mutex before we exit
    pthread_mutex_unlock(&_mutex);
 
+   return retptr;
 }
 
 // Removes all of a particular node (not for student use)

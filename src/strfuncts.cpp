@@ -97,7 +97,7 @@ void genRandString(std::string &buf, size_t n) {
 std::vector<uint8_t> strtovect (std::string input) {
    std::vector<uint8_t> output;
    clrNewlines(input);
-   for (auto j = input.begin(); j != input.end(); j++) {
+   for (std::string::iterator j = input.begin(); j != input.end(); j++) {
       output.push_back(*j);
    }
    return output;
@@ -105,7 +105,7 @@ std::vector<uint8_t> strtovect (std::string input) {
 
 std::string vecttostr (std::vector<uint8_t> input) {
    std::string output;
-   for (auto j = input.begin(); j != input.end(); j++) {
+   for (std::vector<uint8_t>::iterator j = input.begin(); j != input.end(); j++) {
       output.push_back(*j);
    }
    return output;

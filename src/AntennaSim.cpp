@@ -93,6 +93,25 @@ void AntennaSim::simulate() {
       diter->timestamp += _time_offset;
    }
    
+   // To simulate a production system, get time from the NTP server (using getAdjustedTime)
+   // then compare it to the first timestamp, knowing that they transmit every 5 seconds,
+   // so a value outside of that gets corrected 
+   int offsetCorrect;
+   for (diter = _source_db.begin(); diter == _source_db.begin(); diter++) {
+      offsetCorrect = getAdjustedTime() - diter->timestamp;
+      offsetCorrect = abs(offsetCorrect); 
+      //std::cout << "Value: " << offsetCorrect << std::endl;
+   }
+   
+   // This equation is scaled for any offset; however, if production system has a large range 
+   // for offsets, I would recommend increasing the constant (to 60, then increments of 60) to
+   // prevent issues from having a negative time when a server turns on
+   int offsetCorrect2 = 5 - offsetCorrect;
+
+      for (diter = _source_db.begin(); diter != _source_db.end(); diter++) {
+      diter->timestamp += offsetCorrect2;
+   }
+
    // Loop through the injects, sending them as their time arrives
    while (_source_db.size() > 0) {
 
@@ -130,13 +149,38 @@ void AntennaSim::simulate() {
                   diter->drone_id << ", Time: " << diter->timestamp << " Lat: " << 
                   diter->latitude << ", Long: " << diter->longitude << "\n";
 
-         _to_db.addPlot(diter->drone_id, diter->node_id, diter->timestamp, diter->latitude, diter->longitude);
-         diter = _to_db.end();
-         diter--;
-         diter->setFlags(DBFLAG_NEW);
+         // ** All of these lines were another way to check for duplicates, but were less effective
+         // than using DronePlotDB (as this couldn't compare the replicated data and data it picked up
+         // on its own), but is preserved for future use
 
-         _source_db.popFront();
-         diter = _source_db.begin();
+         // std::list<DronePlot>::iterator diter2;
+         // int check = 1;
+         // for (diter2 = _to_db.begin(); diter2 != _to_db.end(); diter2++) {
+         //    //std::cout << "Start loop" << std::endl;
+         //    if (diter->latitude == diter2->latitude && diter->longitude == diter2->longitude) {
+         //       std::cout << "Lat/Long Match" << std::endl;
+         //       // if (diter->longitude == diter2->longitude) {
+         //       //    std::cout << "Long Match" << std::endl;
+         //          if (diter->timestamp < diter2->timestamp + 20 /* && diter->timestamp < diter2->timestamp + 20 */) {
+         //             check = 0;
+         //             std::cout << "Ant Check = " << check << std::endl;
+         //             break;
+         //          }
+         //       // }
+         //    }
+         // }
+            // if (check == 1) {
+            //    std::cout << "Ant write Check = " << check << std::endl;
+               _to_db.addPlot(diter->drone_id, diter->node_id, diter->timestamp, diter->latitude, diter->longitude);
+               diter = _to_db.end();
+               diter--;
+               diter->setFlags(DBFLAG_NEW);
+
+               _source_db.popFront();
+               diter = _source_db.begin();
+            // }
+            
+         
       }
    }
    

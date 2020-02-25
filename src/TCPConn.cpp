@@ -301,9 +301,9 @@ void TCPConn::transmitData() {
 
       decryptData(buf);
       data2 = vecttostr(buf);
-      if (data2 != randStr) {
-         std::cout << "Issue with random strings. data2 = " << data2 << " and randStr = " << randStr << std::endl;
-      }
+      // if (data2 != randStr) {
+      //    std::cout << "Issue with random strings. data2 = " << data2 << " and randStr = " << randStr << std::endl;
+      // }
 
       std::string node(buf.begin(), buf.end());
       setNodeID(node.c_str());
@@ -673,7 +673,7 @@ void TCPConn::serverEncrypt() {
          _server_log.writeLog(msg.str().c_str());
       }
 
-      for (i = 0; i<32; i++) { //should be 32, but crashes above 19
+      for (i = 0; i<32; i++) {
          //std::cout << "server encrypt #" << i << std::endl;
          randIn.push_back(buf.at(i));
       }
