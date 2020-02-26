@@ -665,7 +665,6 @@ void TCPConn::clientEncrypt() {
 // Decrypt from client and confirm random number
 void TCPConn::serverEncrypt() {
    std::vector<uint8_t> buf, randIn, data;
-   std::string data2;
    std::stringstream msg;
    int i = 0;
 
@@ -691,7 +690,6 @@ void TCPConn::serverEncrypt() {
       decryptData(data);
 
       // Encrypt, wrap, and send the randNum
-      //data2 = vecttostr(data);
       encryptData(randIn);
       wrapCmd(randIn, c_sid, c_endsid);
       sendData(randIn);

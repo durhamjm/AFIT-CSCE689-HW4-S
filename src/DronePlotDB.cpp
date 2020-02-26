@@ -258,14 +258,16 @@ void DronePlotDB::addPlot(int drone_id, int node_id, time_t timestamp, float lat
          if (timestamp < diter2->timestamp + 20) {
             check = 0;
             // A match was already found, so this reconciles differences between duplicates points
+            // Comment this section out if it matters which antenna observed which drone (and can't be
+            // determined by lat/long)
             if (node_id > diter2->node_id) {
                 diter2->node_id = node_id;
-                std::cout << "Node ID adjusted" << std::endl;
+                //std::cout << "Node ID adjusted" << std::endl;
             }
             // There was an issue at ~800 seconds where one clock fell out of sync, so this brings it back
             if (timestamp < diter2->timestamp) {
                diter2->timestamp = timestamp;
-               std::cout << "Timestamp adjusted" << std::endl;
+               //std::cout << "Timestamp adjusted" << std::endl;
             }
             
             //std::cout << "DPDB Check = " << check << std::endl;
