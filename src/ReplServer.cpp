@@ -218,7 +218,7 @@ void ReplServer::addSingleDronePlot(std::vector<uint8_t> &data) {
    tmp_plot.deserialize(data);
 
    _plotdb.addPlot(tmp_plot.drone_id, tmp_plot.node_id, tmp_plot.timestamp, tmp_plot.latitude,
-                                                         tmp_plot.longitude);
+                                                         tmp_plot.longitude, getAdjustedTime());
 }
 
 

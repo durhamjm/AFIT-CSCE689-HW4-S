@@ -17,6 +17,10 @@ bool compare_plot(const DronePlot &pp1, const DronePlot &pp2) {
    return (pp1.timestamp < pp2.timestamp);
 }
 
+bool compare_plot2(const DronePlot &pp1, const DronePlot &pp2) {
+   return (pp1.drone_id < pp2.drone_id);
+}
+
 /*****************************************************************************************
  * DronePlot - Constructor for a drone plot object, default initializers
  *****************************************************************************************/
@@ -232,9 +236,16 @@ DronePlotDB::~DronePlotDB() {
  *             
  *****************************************************************************************/
 
-void DronePlotDB::addPlot(int drone_id, int node_id, time_t timestamp, float latitude, float longitude) {
+void DronePlotDB::addPlot(int drone_id, int node_id, time_t timestamp, float latitude, float longitude, time_t adjustedtime) {
    // First lock the mutex (blocking)
    pthread_mutex_lock(&_mutex);
+
+   // Checks how far off each timestamp is from server time and adjusts it (similar to using an NTP server)
+   // Can't work -- addplot is called at most once every 20 seconds, so the current time of the system is up to 20 seconds
+   // from the time of the points
+   // int offsetCorrect = adjustedtime - timestamp;
+   // int offsetCorrect2 = 5 - offsetCorrect;
+   // timestamp += offsetCorrect2;
 
    // Check to see if the data point is already in the database
    std::list<DronePlot>::iterator diter2;
@@ -246,6 +257,17 @@ void DronePlotDB::addPlot(int drone_id, int node_id, time_t timestamp, float lat
          // Then check to see if the new data is at least 20 seconds later than the old point
          if (timestamp < diter2->timestamp + 20) {
             check = 0;
+            // A match was already found, so this reconciles differences between duplicates points
+            if (node_id > diter2->node_id) {
+                diter2->node_id = node_id;
+                std::cout << "Node ID adjusted" << std::endl;
+            }
+            // There was an issue at ~800 seconds where one clock fell out of sync, so this brings it back
+            if (timestamp < diter2->timestamp) {
+               diter2->timestamp = timestamp;
+               std::cout << "Timestamp adjusted" << std::endl;
+            }
+            
             //std::cout << "DPDB Check = " << check << std::endl;
             //break;
          }
@@ -504,6 +526,7 @@ void DronePlotDB::removeNodeID(unsigned int node_id) {
 void DronePlotDB::sortByTime() {
    pthread_mutex_lock(&_mutex);
 
+   _dbdata.sort(compare_plot2);
    _dbdata.sort(compare_plot);
 
    pthread_mutex_unlock(&_mutex);

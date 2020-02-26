@@ -641,13 +641,16 @@ const char *TCPConn::getIPAddrStr(std::string &buf) {
    return buf.c_str();
 }
 
+// Encrypt data before sending it
 void TCPConn::clientEncrypt() {
    std::vector<uint8_t> buf, randNum;
    std::string randStr;
+
    if (_connfd.hasData()) {
       getData(buf);
       getCmdData(buf, c_sid, c_endsid);
 
+      // Encrypt data, gen random string, convert it to a vector, add the data, wrap it, and send to server
       encryptData(buf);
       genRandString(randStr, 32);
       randNum = strtovect(randStr); 
@@ -659,33 +662,36 @@ void TCPConn::clientEncrypt() {
    }
 }
 
+// Decrypt from client and confirm random number
 void TCPConn::serverEncrypt() {
    std::vector<uint8_t> buf, randIn, data;
    std::string data2;
    std::stringstream msg;
    int i = 0;
-   //auto j;
+
    if (_connfd.hasData()) {
       getData(buf);
       if (!getCmdData(buf, c_sid, c_endsid)) {
-         msg << "Encrypted string from client invalid";
-         std::cout << "Encrypted string from client invalid" << std::endl;
+         msg << "Bad encrypted string from client";
+         std::cout << "Bad encrypted string from client" << std::endl;
          _server_log.writeLog(msg.str().c_str());
       }
 
-      for (i = 0; i<32; i++) {
+      // Grab the randNum from the client
+      for (i = 0; i < 32; i++) {
          //std::cout << "server encrypt #" << i << std::endl;
          randIn.push_back(buf.at(i));
       }
 
-      for (auto j = buf.begin()+32; j != buf.end(); j++) {
+      // Grab encrypted data
+      for (std::vector<uint8_t>::iterator j = buf.begin()+32; j != buf.end(); j++) {
          data.push_back(*j);
       }
 
       decryptData(data);
 
-      data2 = vecttostr(data);
-
+      // Encrypt, wrap, and send the randNum
+      //data2 = vecttostr(data);
       encryptData(randIn);
       wrapCmd(randIn, c_sid, c_endsid);
       sendData(randIn);

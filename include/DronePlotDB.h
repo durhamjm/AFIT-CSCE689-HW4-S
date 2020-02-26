@@ -66,7 +66,7 @@ public:
    virtual ~DronePlotDB();
 
    // Add a plot to the database with the given attributes (mutex'd)
-   void addPlot(int drone_id, int node_id, time_t timestamp, float lattitude, float longitude);
+   void addPlot(int drone_id, int node_id, time_t timestamp, float lattitude, float longitude, time_t adjustedtime);
 
    // Load or write the database to/from a CSV file, 
    int loadCSVFile(const char *filename);

@@ -99,17 +99,16 @@ void AntennaSim::simulate() {
    int offsetCorrect;
    for (diter = _source_db.begin(); diter == _source_db.begin(); diter++) {
       offsetCorrect = getAdjustedTime() - diter->timestamp;
-      offsetCorrect = abs(offsetCorrect); 
+      //offsetCorrect = abs(offsetCorrect); 
       //std::cout << "Value: " << offsetCorrect << std::endl;
    }
    
    // This equation is scaled for any offset; however, if production system has a large range 
    // for offsets, I would recommend increasing the constant (to 60, then increments of 60) to
    // prevent issues from having a negative time when a server turns on
-   int offsetCorrect2 = 5 - offsetCorrect;
-
+   int offsetCorrect2 = -5 - offsetCorrect;
       for (diter = _source_db.begin(); diter != _source_db.end(); diter++) {
-      diter->timestamp += offsetCorrect2;
+      diter->timestamp -= offsetCorrect2;
    }
 
    // Loop through the injects, sending them as their time arrives
@@ -171,7 +170,8 @@ void AntennaSim::simulate() {
          // }
             // if (check == 1) {
             //    std::cout << "Ant write Check = " << check << std::endl;
-               _to_db.addPlot(diter->drone_id, diter->node_id, diter->timestamp, diter->latitude, diter->longitude);
+               int adjustedtime = getAdjustedTime();
+               _to_db.addPlot(diter->drone_id, diter->node_id, diter->timestamp, diter->latitude, diter->longitude, adjustedtime);
                diter = _to_db.end();
                diter--;
                diter->setFlags(DBFLAG_NEW);
