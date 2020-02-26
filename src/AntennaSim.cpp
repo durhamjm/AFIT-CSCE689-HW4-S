@@ -95,7 +95,7 @@ void AntennaSim::simulate() {
    
    // To simulate a production system, get time from the NTP server (using getAdjustedTime)
    // then compare it to the first timestamp, knowing that they transmit every 5 seconds,
-   // so a value outside of that gets corrected 
+   // so a value outside of that gets corrected to normalize the distribution
    int offsetCorrect;
    for (diter = _source_db.begin(); diter == _source_db.begin(); diter++) {
       offsetCorrect = getAdjustedTime() - diter->timestamp;

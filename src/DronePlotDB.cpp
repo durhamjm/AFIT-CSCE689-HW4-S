@@ -241,11 +241,11 @@ void DronePlotDB::addPlot(int drone_id, int node_id, time_t timestamp, float lat
    pthread_mutex_lock(&_mutex);
 
    // Checks how far off each timestamp is from server time and adjusts it (similar to using an NTP server)
-   // Can't work -- addplot is called at most once every 20 seconds, so the current time of the system is up to 20 seconds
-   // from the time of the points
-   // int offsetCorrect = adjustedtime - timestamp;
-   // int offsetCorrect2 = 5 - offsetCorrect;
-   // timestamp += offsetCorrect2;
+   // ** Can't work -- addplot is called at most once every 20 seconds, so the current time of the system is up to 20 seconds
+   // ** from the time of the points
+      // int offsetCorrect = adjustedtime - timestamp;
+      // int offsetCorrect2 = 5 - offsetCorrect;
+      // timestamp += offsetCorrect2;
 
    // Check to see if the data point is already in the database
    std::list<DronePlot>::iterator diter2;
@@ -526,6 +526,7 @@ void DronePlotDB::removeNodeID(unsigned int node_id) {
 void DronePlotDB::sortByTime() {
    pthread_mutex_lock(&_mutex);
 
+   // Sort based on drone_id then based on time to minimize differences between files
    _dbdata.sort(compare_plot2);
    _dbdata.sort(compare_plot);
 
