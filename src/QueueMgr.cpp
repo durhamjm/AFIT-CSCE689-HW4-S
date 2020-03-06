@@ -21,7 +21,7 @@ QueueMgr::QueueMgr(unsigned int verbosity):TCPServer(verbosity)
    if (loadServerList("servers.txt") <= 0)
       throw std::runtime_error("Could not open server.txt file, or file was empty/corrupt.");
 
-   loadAESKey("sharedkey.bin");
+   // loadAESKey("sharedkey.bin");
 }
 
 // Destructor - does nothing right now

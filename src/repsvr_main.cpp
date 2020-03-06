@@ -56,14 +56,14 @@ void *t_replserver(void *data) {
 /*****************************************************************************************
  * displayHelp - Shows command line parameters to the user.
  *****************************************************************************************/
-
+// Needs changed for new stuff
 void displayHelp(const char *execname) {
    std::cout << execname << " <sim_data>\n";
    std::cout << "   a: IP address to bind the server to (default: 127.0.0.1)\n";
    std::cout << "   p: Port to bind the server to (default: 9999)\n";
-   std::cout << "   t: time multiplier - t=2.0 runs the sim at 2x speed\n";
+   // std::cout << "   t: time multiplier - t=2.0 runs the sim at 2x speed\n";
    std::cout << "   o: the file to write the DB dump CSV to (default: replication_db.cv)\n";
-   std::cout << "   d: duration - seconds in \"sim time\" to run the sim\n";
+   // std::cout << "   d: duration - seconds in \"sim time\" to run the sim\n";
    std::cout << "   v: verbosity - how much information to send to stdout (0-3, 3=max)\n";
 }
 
@@ -72,7 +72,7 @@ int main(int argc, char *argv[]) {
 
    // ****** Initialization variables ******
    // time_mult - speeds up the simulation by the multiplier (2.0 runs twice as fast)
-   float time_mult = 1.0;
+   // float time_mult = 1.0;
    unsigned int verbosity = 0;
    int sim_time = 900; // Default 900 seconds
    std::string ip_addr = "127.0.0.1";
@@ -87,7 +87,7 @@ int main(int argc, char *argv[]) {
    // will appear in case 1
    unsigned long portval;
    int c = 0;
-   while ((c = getopt(argc, argv, "-o:t:v:d:p:a:")) != -1) {
+   while ((c = getopt(argc, argv, "-o:p:a:")) != -1) {
       switch (c) {
 
       // The inject database file specified in the command line
@@ -112,31 +112,31 @@ int main(int argc, char *argv[]) {
          break;
 
       // time multiplier
-      case 't':
-         time_mult = strtof(optarg, NULL);
-         if (time_mult <= 0.0) {
-            std::cerr << "Invalid time multiplier. Must be > 0.\n";
-            exit(0);
-         }
-         break;
+      // case 't':
+      //    time_mult = strtof(optarg, NULL);
+      //    if (time_mult <= 0.0) {
+      //       std::cerr << "Invalid time multiplier. Must be > 0.\n";
+      //       exit(0);
+      //    }
+      //    break;
 
       // Set the max number to count up to
-      case 'v':
-         verbosity = (unsigned int) strtol(optarg, NULL, 10);
-         if (verbosity > 3){
-            std::cerr << "Invalid verbosity. Range: 0-3 where 3 is max\n";
-            exit(0);
-         }
-         break;
+      // case 'v':
+      //    verbosity = (unsigned int) strtol(optarg, NULL, 10);
+      //    if (verbosity > 3){
+      //       std::cerr << "Invalid verbosity. Range: 0-3 where 3 is max\n";
+      //       exit(0);
+      //    }
+      //    break;
 
       // Set the max number to count up to
-      case 'd':
-         sim_time = (int) strtol(optarg, NULL, 10);
-         if ((sim_time <= 1) || (sim_time > 1000)){
-            std::cerr << "Invalid sim_time. Range: 1 to 1000\n";
-            exit(0);
-         }
-         break;
+      // case 'd':
+      //    sim_time = (int) strtol(optarg, NULL, 10);
+      //    if ((sim_time <= 1) || (sim_time > 1000)){
+      //       std::cerr << "Invalid sim_time. Range: 1 to 1000\n";
+      //       exit(0);
+      //    }
+      //    break;
 
       // IP address to attempt to bind to
       case 'o':
@@ -155,47 +155,89 @@ int main(int argc, char *argv[]) {
 
    }
 
-   if (simdata_file.size() == 0) {
-      std::cerr << "You must specify the sim_data inject database file.\n";
-      displayHelp(argv[0]);
-      exit(0);
+   // Wait for user input here
+   unsigned long n;
+   char confirm;
+   int start = 0;
+   std::cout << "What number do you want to find factors of?" << std::endl;
+   cin >> n;
+   std::cout << "You entered " << n << "." << std::endl << "Is that correct? (Y/N)" << std::endl;
+   cin >> confirm;
+   switch (confirm){
+      case 'Y':
+               std::cout << "setting start to 1" << std::endl;
+               start = 1;
+               break;
+
+      case 'N':
+               std::cout << "killing you for test" << std::endl;
+               break;
+               exit;
+
+      default: 
+               std::cout << "Error, exploding" << std::endl;
+               break;
+               exit;
    }
 
-   DronePlotDB db;
+   if (start == 1 ) {
+      ReplServer repl_server = ReplServer(ip_addr.c_str(), port, n);
+      repl_server.calcPollardsRho2(n);
+   } 
+
+   // if (confirm == "Y") {
+   //    std::cout << "killing self for test" << std::endl;std::cout << "Writing results to: " << outfile << "\n";
+   //    exit;
+   // } else if (confirm == "N") {
+   //    std::cout << "killing you for test" << std::endl;
+   //    exit;
+   // } else {
+   //    std::cout << "Error, exploding" << std::endl;
+   //    exit;
+   // }
+
+
+   // if (simdata_file.size() == 0) {
+   //    std::cerr << "You must specify the sim_data inject database file.\n";
+   //    displayHelp(argv[0]);
+   //    exit(0);
+   // }
+
+   // DronePlotDB db;
 
    // Kick off the simulation thread by creating the sim management object
    // This will raise a runtime_exception if the simdata database load fails
-   AntennaSim sim(db, simdata_file.c_str(), time_mult, verbosity);
+   // AntennaSim sim(db, simdata_file.c_str(), time_mult, verbosity);
 
    // Launch the thread
-   pthread_t simthread;
-   if (pthread_create(&simthread, NULL, t_simulator, (void *) &sim) != 0)
-      throw std::runtime_error("Unable to create simulator thread");
+   // pthread_t simthread;
+   // if (pthread_create(&simthread, NULL, t_simulator, (void *) &sim) != 0)
+   //    throw std::runtime_error("Unable to create simulator thread");
 
    // Start the replication server
-   ReplServer repl_server(db, ip_addr.c_str(), port, time_mult, verbosity); 
+   // ReplServer repl_server(/*db, */ip_addr.c_str(), port/*, time_mult, verbosity*/); 
 
-   pthread_t replthread;
-   if (pthread_create(&replthread, NULL, t_replserver, (void *) &repl_server) != 0)
-      throw std::runtime_error("Unable to create replication server thread");
+   // pthread_t replthread;
+   // if (pthread_create(&replthread, NULL, t_replserver, (void *) &repl_server) != 0)
+   //    throw std::runtime_error("Unable to create replication server thread");
 
    // Sleep the duration of the simulation
-   sleep(sim_time / time_mult);
+   // sleep(sim_time / time_mult);
 
    // Stop the replication server
-   repl_server.shutdown();
+   // repl_server.shutdown();
 
    // Stop the thread
-   sim.terminate();
+   // sim.terminate();
 
    // Wait until the thread has exited
-   pthread_join(simthread, NULL);
-   pthread_join(replthread, NULL);
+   // pthread_join(simthread, NULL);
+   // pthread_join(replthread, NULL);
 
    // Write the replication database to a CSV file
-   std::cout << "Writing results to: " << outfile << "\n";
-   db.sortByTime();
-   db.writeCSVFile(outfile.c_str());
+   // std::cout << "Writing results to: " << outfile << "\n";
+   // db.sortByTime();
+   // db.writeCSVFile(outfile.c_str());
    
    return 0;
 }

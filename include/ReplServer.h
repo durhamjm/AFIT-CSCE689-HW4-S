@@ -17,9 +17,9 @@
 class ReplServer 
 {
 public:
-   ReplServer(DronePlotDB &plotdb, const char *ip_addr, unsigned short port,
-                              float _time_mult = 1.0, unsigned int verbosity = 1);
-   ReplServer(DronePlotDB &plotdb, float _time_mult = 1.0);
+   ReplServer(/*DronePlotDB &plotdb, */const char *ip_addr, unsigned short port, unsigned long m/*,
+                              float _time_mult = 1.0, unsigned int verbosity = 1*/);
+   // ReplServer(DronePlotDB &plotdb, float _time_mult = 1.0);
    virtual ~ReplServer();
 
    // Main replication loop, continues until _shutdown is set
@@ -32,30 +32,39 @@ public:
    // An adjusted time that accounts for "time_mult", which speeds up the clock. Any
    // attempts to check "simulator time" should use this function
    time_t getAdjustedTime();
+   std::list<unsigned long> primes;
+
+   unsigned long modularPow(unsigned long base, int exponent, unsigned long modulus);
+   unsigned long calcPollardsRho(unsigned long n);
+   unsigned long calcPollardsRho2(unsigned long n);
+   void combinePrimes(std::list<unsigned long> &dest);
+
+   void math(unsigned long n);
 
 private:
 
-   void addReplDronePlots(std::vector<uint8_t> &data);
-   void addSingleDronePlot(std::vector<uint8_t> &data);
+   // void addReplDronePlots(std::vector<uint8_t> &data);
+   // void addSingleDronePlot(std::vector<uint8_t> &data);
 
    unsigned int queueNewPlots();
 
+   unsigned long num;
 
-   QueueMgr _queue;    
+   // QueueMgr _queue;    
 
    // Holds our drone plot information
-   DronePlotDB &_plotdb;
+   // DronePlotDB &_plotdb;
 
    bool _shutdown;
 
    // How fast to run the system clock - 1.0 = normal speed, 2.0 = 2x as fast
-   float _time_mult;
+   // float _time_mult;
 
-   // System clock time of when the server started
-   time_t _start_time;
+   // // System clock time of when the server started
+   // time_t _start_time;
 
-   // When the last replication happened so we can know when to do another one
-   time_t _last_repl;
+   // // When the last replication happened so we can know when to do another one
+   // time_t _last_repl;
 
    // How much to spam stdout with server status
    unsigned int _verbosity;

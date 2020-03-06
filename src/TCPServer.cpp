@@ -61,7 +61,7 @@ void TCPServer::listenSvr() {
    std::stringstream msg;
    _sockfd.getIPAddrStr(ipaddr_str);
    msg << "Server listening on IP " << ipaddr_str << "' port '" << _sockfd.getPort() << "'";
-   _server_log.writeLog(msg.str().c_str());
+   // _server_log.writeLog(msg.str().c_str());
 }
 
 /**********************************************************************************************
@@ -124,25 +124,25 @@ TCPConn *TCPServer::handleSocket() {
 
 
       // Check the whitelist
-      ALMgr al("whitelist");
-      if (!al.isAllowed(new_conn->getIPAddr()))
-      {
-         // Disconnect the user
-         new_conn->disconnect();
+      // ALMgr al("whitelist");
+      // if (!al.isAllowed(new_conn->getIPAddr()))
+      // {
+      //    // Disconnect the user
+      //    new_conn->disconnect();
 
-         // Log their attempted connection
-         std::string msg = "Connection by IP address '";
-         msg += ipaddr_str;
-         msg += "' not on whitelist. Disconnecting.";
-         _server_log.writeLog(msg);
+      //    // Log their attempted connection
+      //    std::string msg = "Connection by IP address '";
+      //    msg += ipaddr_str;
+      //    msg += "' not on whitelist. Disconnecting.";
+      //    _server_log.writeLog(msg);
 
-         return NULL;
-      }
+      //    return NULL;
+      // }
 
       std::string msg = "Connection from IP address '";
       msg += ipaddr_str;
       msg += "'.";
-      _server_log.writeLog(msg);
+      // _server_log.writeLog(msg);
 
       // Send an authentication string in cleartext
             
@@ -187,26 +187,26 @@ void TCPServer::handleConnections() {
                std::stringstream msg;
                msg << "Connect to SID " << (*tptr)->getNodeID() << 
                         " failed when trying to send data. Msg: " << e.what();
-               if (_verbosity >= 2)
-                  std::cout << msg.str() << "\n";
-               _server_log.writeLog(msg.str().c_str());
+               // if (_verbosity >= 2)
+               //    std::cout << msg.str() << "\n";
+               // _server_log.writeLog(msg.str().c_str());
                (*tptr)->disconnect();
                (*tptr)->reconnect = time(NULL) + reconnect_delay;
                tptr++;
                continue;
             }
          // Else we're in a different state and there's not data waiting to be read
-         } else if (!(*tptr)->isInputDataReady()) {
-         // Log it
-            std::string msg = "Node ID '";
-            msg += (*tptr)->getNodeID();
-            msg += "' lost connection.";
-            _server_log.writeLog(msg);
+         // } else if (!(*tptr)->isInputDataReady()) {
+         // // Log it
+         //    std::string msg = "Node ID '";
+         //    msg += (*tptr)->getNodeID();
+         //    msg += "' lost connection.";
+         //    _server_log.writeLog(msg);
 
-            // Remove them from the connect list
-            tptr = _connlist.erase(tptr);
-            std::cout << "Connection disconnected.\n";
-            continue;
+         //    // Remove them from the connect list
+         //    tptr = _connlist.erase(tptr);
+         //    std::cout << "Connection disconnected.\n";
+         //    continue;
          }
          tptr++;
          continue;
@@ -224,10 +224,10 @@ void TCPServer::handleConnections() {
 /*********************************************************************************************
  * loadAESKey - reads in the 128 bit AES key from the indicated file
  *********************************************************************************************/
-void TCPServer::loadAESKey(const char *filename) {
+// void TCPServer::loadAESKey(const char *filename) {
 
-   CryptoPP::FileSource keyfile(filename, true, new CryptoPP::ArraySink(_aes_key.begin(), _aes_key.size()));
-}
+//    CryptoPP::FileSource keyfile(filename, true, new CryptoPP::ArraySink(_aes_key.begin(), _aes_key.size()));
+// }
 
 
 /**********************************************************************************************

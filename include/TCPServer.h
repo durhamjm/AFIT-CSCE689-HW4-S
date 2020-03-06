@@ -42,7 +42,7 @@ public:
 
 protected:
 
-   void loadAESKey(const char *filename);
+   // void loadAESKey(const char *filename);
 
    // List of TCPConn objects to manage connections
    std::list<std::unique_ptr<TCPConn>> _connlist;
